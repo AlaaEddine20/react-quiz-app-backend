@@ -2,7 +2,7 @@ const { readJSON, writeJSON } = require("fs-extra");
 const { join } = require("path");
 
 const questionsPath = join(__dirname, "questions.json");
-const examResultsPath = join(__dirname, "./examResults.json");
+const examsPath = join(__dirname, "./exams.json");
 const readDB = async (filePath) => {
   try {
     const fileJson = await readJSON(filePath);
@@ -25,6 +25,6 @@ module.exports = {
   getQuestions: async () => readDB(questionsPath),
   writeQuestions: async (questionsData) =>
     writeDB(questionsPath, questionsData),
-  getExamResults: async () => readDB(examResultsPath),
-  writeExamResults: async (examData) => writeDB(examResultsPath, examData),
+  getExams: async () => readDB(examsPath),
+  writeExams: async (examData) => writeDB(examsPath, examData),
 };
