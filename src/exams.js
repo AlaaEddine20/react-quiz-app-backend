@@ -35,6 +35,7 @@ router.post("/start", validation, async (req, res, next) => {
         examDate: new Date(),
         isCompleted: false,
         name: "Admission test",
+        score: 0,
         rQuestions,
       });
       await writeExams(exams);
@@ -50,16 +51,46 @@ router.post("/:id/answer", async (req, res, next) => {
   try {
     const exams = await getExams();
 
-    const examIndex = exams.findIndex((exam) => exam._id === req.params.id);
+    // FIND CURRENT EXAM FROM THE ROUTE/QUERY
+    const currentExam = exams.find((exam) => exam._id === req.params.id);
 
-    if (examIndex !== -1) {
-      exams[examIndex].rQuestions[req.body.question].providedAnswer =
-        req.body.answer;
+    // IF THE EXAM IS FOUND THEBN CHECK THE ANSWER FROM THE REQ
+    if (currentExam) {
+      // READING THE QUESTION THAT COMES FROM THE BODY (AND CLIENT) ACCESSING ITS INDEX
+      const question = currentExam.rQuestions[req.body.question];
+      // STORING THE VARIABLE "question" TO USE IT FOR STORING "question"
+      // READING THE ANSWER THAT COMES FROM THE BODY (AND CLIENT) ACCESSING ITS INDEX
+      const answer = question.answers[req.body.answer];
+      // CHECKING IF THE ANSWER IS TRUE ACCESSING THE PROP isCorrect
+      if (answer.isCorrect === true) {
+        // console.log("SCORE");
+        currentExam.score = +1; // IF isCorrect IS TRUE THEN UPDATE THE SCORE
+      }
+      // CREATING A NEW PROP "providedAnswer"
+      currentExam.rQuestions[req.body.question].providedAnswer =
+        req.body.answer; // ASSIGNING IT TO THE ANSWER THAT COMES FROM THE BODY (AND CLIENT)
 
-      await writeExams(exams);
+      // SENDING THE CURRENT EXAM AS ARRAY OTHERWISE IT WOULD OVERWRITE THE ARRAY IN DATABASE
+      await writeExams([currentExam]);
       res.send("Answer sent");
     } else {
       res.send("Exam not found!");
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+
+router.get("/:id", async (req, res, next) => {
+  try {
+    const exams = await getExams();
+
+    const currentExam = exams.find((exam) => exam._id === req.params.id);
+    if (currentExam) {
+      res.send(currentExam);
+    } else {
+      res.send("Exam not found");
     }
   } catch (error) {
     console.log(error);
